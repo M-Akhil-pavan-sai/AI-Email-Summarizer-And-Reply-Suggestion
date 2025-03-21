@@ -32,15 +32,18 @@ export async function summarizeEmail(text: string) {
   return response.json();
 }
 
-// // Generate reply suggestion
-// export async function generateReply(text: string, style: string) {
-//   const response = await fetch(`${API_BASE_URL}/reply`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ text, style }),
-//   });
-//   if (!response.ok) {
-//     throw new Error("Failed to generate reply");
-//   }
-//   return response.json();
-// }
+// Generate reply suggestion
+export async function generateReply(text: string, style: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/reply?style=${encodeURIComponent(style)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to generate reply");
+  }
+  return response.json();
+}

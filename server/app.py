@@ -220,14 +220,33 @@ def summarize_email():
 def generate_reply():
     data = request.get_json()
     text = data.get("text", "")
-    style = data.get("style", "standard")
+    style = request.args.get("style", data.get("style", "standard"))
     if not text:
         return jsonify({"error": "No text provided"}), 400
-    prompt = f"Draft a {style} reply to the following email:\n\n{text}\n\nReply:"
+
+    # Read personal context from profile.txt
+    try:
+        with open("profile.txt", "r", encoding="utf-8") as f:
+            profile_context = f.read()
+    except Exception as e:
+        print("Could not read profile.txt:", e)
+        profile_context = ""
+
+    # Build prompt instructing the model to output only the reply text.
+    prompt = (
+        f"Draft a {style} email reply to the following email on my behalf. "
+        f"Review the email and if it is relevant to my personal profile, incorporate the following profile details where appropriate; "
+        f"otherwise, just generate a direct reply. Do not include any additional text such as 'Thank you for giving me the opportunity...'.\n\n"
+        f"Profile:\n{profile_context}\n\n"
+        f"Email:\n{text}\n\n"
+        f"Final Reply (only the reply text):"
+    )
+
     messages = [
-        {"role": "system", "content": "You are a helpful assistant for drafting email replies."},
+        {"role": "system", "content": "You are an assistant that drafts direct email replies without extra commentary."},
         {"role": "user", "content": prompt}
     ]
+    
     reply_text = call_ollama("llama2", messages)
     if reply_text is None:
         return jsonify({"error": "Failed to generate reply."}), 500
