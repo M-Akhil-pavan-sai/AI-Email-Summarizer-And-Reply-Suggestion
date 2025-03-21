@@ -1,36 +1,12 @@
 
 export interface Email {
-    id: string;
-    from: {
-      name: string;
-      email: string;
-    };
-    to: {
-      name: string;
-      email: string;
-    };
+    uid: string;
+    from: string;
     subject: string;
     body: string;
-    timestamp: string;
-    read: boolean;
-    starred: boolean;
-    labels?: string[];
-    attachments?: {
-      name: string;
-      size: number;
-      type: string;
-    }[];
+    date: string;
   }
   
   export interface EmailSummary {
-    briefSummary: string;
-    actionItems: string[];
+    summary: string;
   }
-  
-  export type ReplyType = 'concise' | 'standard' | 'detailed';
-  
-  export interface EmailReply {
-    type: ReplyType;
-    content: string;
-  }
-  

@@ -1,48 +1,59 @@
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import EmailListItem from '../EmailListItem';
 import EmailDetail from '../EmailDetail.tsx'; // Ensure the file exists and is correctly named
 import EmailSidebar from '../EmailSidebar';
 import SetupForm from '../SetupForm.tsx';
-import { mockEmails, getEmailById, getSummaryById, getRepliesById } from '../../../utils/mockData';
+import { mockEmails } from '../../../utils/mockData';
 import { Button } from '../button';
-import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../dialog';
 import { X } from 'lucide-react';
+import { fetchEmails,fetchEmailDetail,summarizeEmail } from '../../../api/emailAPI';
+import { Email } from 'src/types/email.ts';
 
 const Index = () => {
   const [emails, setEmails] = useState(mockEmails);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
-  
-  const selectedEmail = selectedEmailId ? getEmailById(selectedEmailId) : null;
-  const emailSummary = selectedEmailId ? getSummaryById(selectedEmailId) : null;
-  const emailReplies = selectedEmailId ? getRepliesById(selectedEmailId) : null;
+  const [loading, setLoading] = useState(true);
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [emailSummary, setEmailSummary] = useState<{summary:string} | null>(null);
+
+  useEffect(() => {
+    if (selectedEmailId) {
+      fetchEmailDetail(selectedEmailId).then(email => {
+        setSelectedEmail(email);
+        return summarizeEmail(email.body);
+      }).then(summary => {
+        setEmailSummary(summary);
+      }).catch(err => {
+        console.error("Error fetching email details or summary:", err);
+      });
+    } else {
+      setSelectedEmail(null);
+      setEmailSummary(null);
+    }
+  }, [selectedEmailId]);
+
+  useEffect(() => {
+    fetchEmails()
+      .then((data) => {
+        console.log("Fetched Emails, data:", data);
+        setEmails(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching emails:", err);
+        setLoading(false);
+      });
+  }, []);
   
   const handleEmailClick = (id: string) => {
     setSelectedEmailId(id);
     
-    // Mark the email as read
-    setEmails(prevEmails =>
-      prevEmails.map(email =>
-        email.id === id ? { ...email, read: true } : email
-      )
-    );
   };
-  
-  const handleStarToggle = (id: string, starred: boolean) => {
-    setEmails(prevEmails =>
-      prevEmails.map(email =>
-        email.id === id ? { ...email, starred } : email
-      )
-    );
-    
-    toast(starred ? "Email starred" : "Email unstarred",{
-      description: "Your changes have been saved",
-      duration: 2000,
-    });
-  };
+
   
   const handleBack = () => {
     setSelectedEmailId(null);
@@ -55,6 +66,8 @@ const Index = () => {
   if (!isSetupComplete) {
     return <SetupForm onSetupComplete={() => setIsSetupComplete(true)} />;
   }
+
+  if (loading) return <div>Loading emails...</div>;
   
   return (
     <div className="flex h-screen overflow-hidden bg-email-background">
@@ -84,23 +97,21 @@ const Index = () => {
               <h2 className="text-xl font-semibold mb-4">Inbox (5)</h2>
               {emails.map((email) => (
                 <EmailListItem
-                  key={email.id}
+                  key={email.uid}
                   email={email}
-                  isSelected={email.id === selectedEmailId}
-                  onClick={() => handleEmailClick(email.id)}
-                  onStarToggle={handleStarToggle}
+                  isSelected={email.uid === selectedEmailId}
+                  onClick={() => handleEmailClick(email.uid)}
                 />
               ))}
             </div>
           )}
           
           {/* Email detail */}
-          {selectedEmailId && selectedEmail && emailSummary && emailReplies && (
+          {selectedEmailId && selectedEmail && emailSummary  && (
             <div className="w-full p-4 overflow-y-auto">
               <EmailDetail
                 email={selectedEmail}
                 summary={emailSummary}
-                replies={emailReplies}
                 onBack={handleBack}
               />
             </div>

@@ -7,6 +7,8 @@ from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import json
 import requests
+from flask_cors import CORS
+
 
 # OAuth2 libraries
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -23,6 +25,9 @@ CREDENTIALS_FILE = 'credentials.json'
 TOKEN_FILE = 'token.json'
 
 app = Flask(__name__)
+
+CORS(app)
+
 
 # Authenticate and refresh Gmail credentials via OAuth2.
 def authenticate_gmail():
@@ -61,20 +66,23 @@ def connect_to_gmail_imap():
         return None
     return imap_conn
 
-# Fetch top 10 unread emails via UID.
-def fetch_unread_emails():
+def fetch_latest_emails():
     try:
         mail = connect_to_gmail_imap()
         if not mail:
             return []
         mail.select("inbox")
-        status, messages = mail.uid('search', None, 'UNSEEN')
+        # Get all email UIDs
+        status, messages = mail.uid('search', None, 'ALL')
         if status != 'OK':
             mail.logout()
             return []
         uid_list = messages[0].split()
+        # Sort UIDs numerically in descending order (newest first)
+        uid_list_sorted = sorted(uid_list, key=lambda x: int(x), reverse=True)
+        latest_uids = uid_list_sorted[:5]
         emails = []
-        for uid in uid_list[:10]:
+        for uid in latest_uids:
             res, msg_data = mail.uid('fetch', uid, "(RFC822)")
             for response in msg_data:
                 if isinstance(response, tuple):
@@ -108,6 +116,8 @@ def fetch_unread_emails():
         print("Error fetching emails:", e)
         return []
 
+
+
 # Call local Ollama HTTP API.
 def call_ollama(model, messages):
     url = os.getenv("OLLAMA_SERVER") # Adjust endpoint if needed.
@@ -136,7 +146,7 @@ def call_ollama(model, messages):
 # Endpoints
 @app.route("/emails", methods=["GET"])
 def get_emails():
-    emails = fetch_unread_emails()
+    emails = fetch_latest_emails()
     summaries = [{
         "uid": e["uid"],
         "subject": e["subject"],
