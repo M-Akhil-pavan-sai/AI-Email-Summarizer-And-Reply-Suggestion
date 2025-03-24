@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from './checkbox';
 import { Mail, Lock, Server, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-
+import FloatingIcons from './FloatingIcons';
 interface SetupFormProps {
   onSetupComplete: () => void;
 }
@@ -80,6 +80,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onSetupComplete }) => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-email-background p-4">
       <Card className="w-full max-w-md mx-auto shadow-lg">
+        <FloatingIcons />
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <div className="w-12 h-12 rounded-full bg-email-primary flex items-center justify-center">

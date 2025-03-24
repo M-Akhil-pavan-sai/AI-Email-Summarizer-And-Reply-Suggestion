@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../dialog';
 import { X } from 'lucide-react';
 import { fetchEmails,fetchEmailDetail,summarizeEmail } from '../../../api/emailAPI';
 import { Email } from 'src/types/email.ts';
+import FloatingIcons from '../FloatingIcons.tsx';
 
 const Index = () => {
   const [emails, setEmails] = useState(mockEmails);
@@ -71,6 +72,7 @@ const Index = () => {
   
   return (
     <div className="flex h-screen overflow-hidden bg-email-background">
+       <FloatingIcons />
       {/* Sidebar */}
       <div className="w-64 hidden md:block">
         <EmailSidebar onComposeClick={handleComposeClick} />

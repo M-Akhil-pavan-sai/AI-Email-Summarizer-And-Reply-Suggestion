@@ -206,15 +206,21 @@ def summarize_email():
     text = data.get("text", "")
     if not text:
         return jsonify({"error": "No text provided"}), 400
-    prompt = f"Summarize the following email and highlight any key action items:\n\n{text}\n\nSummary:"
+    prompt = (
+        f"Summarize the following email by listing only the key action items as numbered bullet points, "
+        f"with no additional text. Each bullet point should start with its number followed by a period.\n\n"
+        f"Email:\n{text}\n\n"
+        f"Bullet Points:"
+    )
     messages = [
         {"role": "system", "content": "You are a helpful email summarizer."},
         {"role": "user", "content": prompt}
     ]
-    summary = call_ollama("llama2", messages)
+    summary = call_ollama("gemma3", messages)
     if summary is None:
         return jsonify({"error": "Failed to generate summary."}), 500
     return jsonify({"summary": summary})
+
 
 @app.route("/reply", methods=["POST"])
 def generate_reply():
@@ -232,11 +238,10 @@ def generate_reply():
         print("Could not read profile.txt:", e)
         profile_context = ""
 
-    # Build prompt instructing the model to output only the reply text.
     prompt = (
-        f"Draft a {style} email reply to the following email on my behalf. "
-        f"Review the email and if it is relevant to my personal profile, incorporate the following profile details where appropriate; "
-        f"otherwise, just generate a direct reply. Do not include any additional text such as 'Thank you for giving me the opportunity...'.\n\n"
+        f"Draft a {style} email reply on behalf of Akhil Pavan Sai Machavaram to the following email. "
+        f"Do not include any introductory or meta-commentary; output only the final reply text. "
+        f"Use the profile information below only if relevant to the email content.\n\n"
         f"Profile:\n{profile_context}\n\n"
         f"Email:\n{text}\n\n"
         f"Final Reply (only the reply text):"
@@ -247,7 +252,7 @@ def generate_reply():
         {"role": "user", "content": prompt}
     ]
     
-    reply_text = call_ollama("llama2", messages)
+    reply_text = call_ollama("gemma3", messages)
     if reply_text is None:
         return jsonify({"error": "Failed to generate reply."}), 500
     return jsonify({"reply": reply_text})
