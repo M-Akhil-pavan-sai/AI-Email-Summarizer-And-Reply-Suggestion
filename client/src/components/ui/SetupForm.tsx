@@ -100,13 +100,13 @@ const SetupForm: React.FC<SetupFormProps> = ({ onSetupComplete }) => {
                 defaultValue={formData.provider}
                 onValueChange={handleProviderChange}
               >
-                <SelectTrigger id="provider">
+                <SelectTrigger id="provider"  className="bg-white dark:bg-gray-800 text-email-text-primary dark:text-email-text-primary">
                   <SelectValue placeholder="Select provider" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gmail">Gmail</SelectItem>
-                  <SelectItem value="outlook">Outlook</SelectItem>
-                  <SelectItem value="custom">Other (Custom)</SelectItem>
+                <SelectContent className="bg-white dark:bg-gray-800">
+                  <SelectItem value="gmail" className="relative pl-8">Gmail</SelectItem>
+                  <SelectItem value="outlook" className="relative pl-8">Outlook</SelectItem>
+                  <SelectItem value="custom"className="relative pl-8">Other (Custom)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -202,9 +202,12 @@ const SetupForm: React.FC<SetupFormProps> = ({ onSetupComplete }) => {
             
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md text-sm text-blue-800 dark:text-blue-200 mt-4">
               <p className="font-medium mb-1">Security Note</p>
-              <p className="text-xs">
-                Your credentials are securely stored locally and only used to connect to your email provider. We never store your password on our servers.
-              </p>
+              <p>
+        This application uses only mock data in the deployed version. Due to security concerns—including the secure storage and handling of credentials and the risk of exposing sensitive email data—I have opted to use predetermined, non-sensitive data. It needs expertise to implement a fully secure, dynamic credential management system that meets industry standards.
+      </p>
+      <p className="mt-2">
+        The use of mock data is intended to protect user privacy and prevent any risk of real email data being compromised. This application is for demonstration, and no real email communication or sensitive information is processed.
+      </p>
             </div>
           </CardContent>
           

@@ -1,49 +1,49 @@
 // src/api/emailApi.ts
-export const API_BASE_URL = "http://127.0.0.1:5000";
+import { getEmailById, mockEmails, mockSummaries, mockReplies } from "../utils/mockData";
 
-// Fetch list of email summaries
+// Fetch list of email summaries (using mock data)
 export async function fetchEmails() {
-  const response = await fetch(`${API_BASE_URL}/emails`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch emails");
-  }
-  return response.json();
+  return Promise.resolve(mockEmails);
 }
 
-// Fetch a single email detail by UID
+// Fetch a single email detail by UID (using mock data)
 export async function fetchEmailDetail(uid: string) {
-  const response = await fetch(`${API_BASE_URL}/email/${uid}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch email detail");
-  }
-  return response.json();
+  const email = getEmailById(uid);
+  return email
+    ? Promise.resolve(email)
+    : Promise.reject(new Error("Email not found"));
 }
 
-// Summarize email content
+// Summarize email content (using mock data)
 export async function summarizeEmail(text: string) {
-  const response = await fetch(`${API_BASE_URL}/summarize`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to summarize email");
+  const trimmedText = text.trim();
+  // Try to match the provided text with one of the mock email bodies.
+  for (const email of mockEmails) {
+    const emailSnippet = email.body.slice(0, 50).trim();
+    if (trimmedText.includes(emailSnippet) || email.body.includes(trimmedText)) {
+      return Promise.resolve(mockSummaries[email.uid]);
+    }
   }
-  return response.json();
+  // Fallback summary if no match is found
+  return Promise.resolve({
+    summary: "No summary found for the provided text. Please verify the email content."
+  });
 }
 
-// Generate reply suggestion
+// Generate reply suggestion (using mock data)
 export async function generateReply(text: string, style: string) {
-  const response = await fetch(
-    `${API_BASE_URL}/reply?style=${encodeURIComponent(style)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+  const normalizedStyle = style === "very short" ? "precise" : style;
+  const typedStyle = normalizedStyle as "precise" | "standard" | "elaborated";
+  const trimmedText = text.trim().toLowerCase();
+  for (const email of mockEmails) {
+    const snippet = email.body.slice(0, 50).trim().toLowerCase();
+    if (trimmedText.includes(snippet) || snippet.includes(trimmedText)) {
+      const repliesForEmail = mockReplies[email.uid];
+      if (repliesForEmail && repliesForEmail[typedStyle]) {
+        return Promise.resolve({ reply: repliesForEmail[typedStyle].content });
+      }
     }
-  );
-  if (!response.ok) {
-    throw new Error("Failed to generate reply");
   }
-  return response.json();
+  // Fallback reply if no match is found
+  return Promise.resolve({ reply: "No reply suggestion available for this email." });
 }

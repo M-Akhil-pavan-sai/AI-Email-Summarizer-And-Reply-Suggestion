@@ -133,6 +133,17 @@ body {
 }
 
 /* Border Radius Utilities */
+.select-item-indicator {
+  display: none !important;
+}
+[data-radix-select-item-indicator] {
+  display: none !important;
+}
+
+/* Also hide any SVG inside a checked select item */
+[data-state="checked"] svg {
+  display: none !important;
+}
 .rounded {
   border-radius: var(--radius);
 }
@@ -936,7 +947,6 @@ bg-white\\90 {
 
 /* Legacy App.css styles */
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
